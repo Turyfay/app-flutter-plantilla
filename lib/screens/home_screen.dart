@@ -1,11 +1,15 @@
+import 'package:app_plantilla/services/services.dart';
 import 'package:app_plantilla/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final productService = Provider.of<ProductService>(context);
+    if (productService.isLoading) return const LoadingScreen();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, //Elimina el boton de volver
@@ -13,9 +17,11 @@ class HomeScreen extends StatelessWidget {
         title: const Text('Productos'),
       ),
       body: ListView.builder(
-          itemCount: 10,
+          itemCount: productService.products.length,
           itemBuilder: (_, index) {
-            return const ProductCard();
+            return GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/product'),
+                child: ProductCard(product: productService.products[index]));
           }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},

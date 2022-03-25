@@ -1,7 +1,20 @@
 import 'package:app_plantilla/screens/screens.dart';
+import 'package:app_plantilla/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(AppState());
+
+class AppState extends StatelessWidget {
+  const AppState({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(providers: [
+      ChangeNotifierProvider(create: (_) => ProductService()),
+    ], child: const MyApp());
+  }
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -20,6 +33,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
+        '/product': (context) => const ProductScreen(),
       },
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.grey[300],

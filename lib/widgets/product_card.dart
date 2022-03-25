@@ -1,7 +1,10 @@
+import 'package:app_plantilla/models/models.dart';
 import 'package:flutter/material.dart';
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({Key? key}) : super(key: key);
+  final Product product;
+
+  const ProductCard({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,11 +16,24 @@ class ProductCard extends StatelessWidget {
         decoration: _BoxDecoration(),
         child: Stack(
           alignment: Alignment.bottomCenter,
-          children: const [
-            _BackgroundImage(),
-            _ProductDetails(),
-            Positioned(top: 0, right: 0, child: _PriceTag()),
-            Positioned(top: 0, left: 0, child: _NoteAvalible())
+          children: [
+            _BackgroundImage(
+              image: product.picture,
+            ),
+            _ProductDetails(
+              title: product.name,
+              id: product.id!,
+            ),
+            Positioned(
+                top: 0,
+                right: 0,
+                child: _PriceTag(
+                  price: product.price,
+                )),
+            Positioned(
+                top: 0,
+                left: 0,
+                child: !product.available ? _NoteAvalible() : Container())
           ],
         ),
       ),
@@ -70,20 +86,22 @@ class _NoteAvalible extends StatelessWidget {
 }
 
 class _PriceTag extends StatelessWidget {
+  final double price;
   const _PriceTag({
     Key? key,
+    required this.price,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      child: const FittedBox(
+      child: FittedBox(
         fit: BoxFit.contain,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Text('\$100',
-              style: TextStyle(fontSize: 20, color: Colors.white)),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Text('\$$price',
+              style: const TextStyle(fontSize: 20, color: Colors.white)),
         ),
       ),
       width: 100,
@@ -106,8 +124,12 @@ class _PriceTag extends StatelessWidget {
 }
 
 class _ProductDetails extends StatelessWidget {
+  final String title;
+  final String id;
   const _ProductDetails({
     Key? key,
+    required this.title,
+    required this.id,
   }) : super(key: key);
 
   @override
@@ -118,17 +140,17 @@ class _ProductDetails extends StatelessWidget {
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(25), topRight: Radius.circular(25)),
-          color: Colors.red,
+          color: Colors.indigo,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         width: double.infinity,
         height: 70,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
-              'Disco duro',
-              style: TextStyle(
+              title,
+              style: const TextStyle(
                   fontSize: 20,
                   color: Colors.white,
                   fontWeight: FontWeight.bold),
@@ -136,8 +158,8 @@ class _ProductDetails extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              'ID del disco duro',
-              style: TextStyle(
+              id,
+              style: const TextStyle(
                 fontSize: 15,
                 color: Colors.white,
               ),
@@ -152,8 +174,10 @@ class _ProductDetails extends StatelessWidget {
 }
 
 class _BackgroundImage extends StatelessWidget {
+  final String? image;
   const _BackgroundImage({
     Key? key,
+    required this.image,
   }) : super(key: key);
 
   @override
@@ -163,12 +187,14 @@ class _BackgroundImage extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: 400,
-        child: const FadeInImage(
-          image: NetworkImage(
-              'https://www.online-image-editor.com/styles/2019/images/power_girl_editor.png'),
-          placeholder: AssetImage('assets/jar-loading.gif'),
-          fit: BoxFit.cover,
-        ),
+        child: image == null
+            ? const Image(
+                fit: BoxFit.cover, image: AssetImage('assets/no-image.png'))
+            : FadeInImage(
+                image: NetworkImage(image!),
+                placeholder: const AssetImage('assets/jar-loading.gif'),
+                fit: BoxFit.cover,
+              ),
       ),
     );
   }
