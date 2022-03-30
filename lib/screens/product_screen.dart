@@ -1,25 +1,58 @@
+import 'package:app_plantilla/providers/product_form_provider.dart';
+import 'package:app_plantilla/services/services.dart';
 import 'package:app_plantilla/utils/UI/input_decorations.dart';
 import 'package:app_plantilla/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProductScreen extends StatelessWidget {
   const ProductScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final productService = Provider.of<ProductService>(context);
+    return ChangeNotifierProvider(
+      create: (_) => ProductFormProvider(productService.selectedProduct!),
+      child: _ProductsScreenBody(
+        productService: productService,
+      ),
+    );
+    //return _ProductsScreenBody(productService: productService);
+  }
+}
+
+class _ProductsScreenBody extends StatelessWidget {
+  const _ProductsScreenBody({
+    Key? key,
+    required this.productService,
+  }) : super(key: key);
+
+  final ProductService productService;
+
+  @override
+  Widget build(BuildContext context) {
+    final ProductFormProvider productFormProvider =
+        Provider.of<ProductFormProvider>(context);
+
     return Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.save_outlined),
-          onPressed: () {},
+          onPressed: () async {
+            if (!productFormProvider.isValid()) return;
+            await productService
+                .saveOrCreateProduct(productFormProvider.product);
+          },
         ),
         body: SafeArea(
           child: SingleChildScrollView(
+            //PkeyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: Column(
               children: [
                 Stack(
                   children: [
-                    const ProductoImage(),
+                    ProductoImage(url: productService.selectedProduct?.picture),
                     Positioned(
                       top: 20,
                       left: 20,
@@ -33,7 +66,19 @@ class ProductScreen extends StatelessWidget {
                       top: 20,
                       right: 30,
                       child: IconButton(
-                        onPressed: () => {},
+                        onPressed: () async {
+                          final picker = new ImagePicker();
+                          final XFile? pickedFile = await picker.pickImage(
+                              source: ImageSource.gallery, imageQuality: 100);
+                          if (pickedFile == null) {
+                            print('No se pudo cargar la imagen');
+                            return;
+                          }
+
+                          print('Se cargo la imagen');
+                          productService
+                              .updateSelectProductImage(pickedFile?.path);
+                        },
                         icon: const Icon(Icons.camera_alt_outlined,
                             color: Colors.white, size: 40),
                       ),
@@ -56,6 +101,8 @@ class _ProductForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final productFormProvider = Provider.of<ProductFormProvider>(context);
+    final product = productFormProvider.product;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Container(
@@ -63,27 +110,49 @@ class _ProductForm extends StatelessWidget {
         width: double.infinity,
         decoration: _buildBoxDecoration(),
         child: Form(
+          key: productFormProvider.formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             children: [
               const SizedBox(height: 10),
               TextFormField(
+                initialValue: product.name,
+                onChanged: (value) => product.name = value,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Este campo es requerido';
+                  }
+                  return null;
+                },
                 decoration: InputDecorations.authInputDecoration(
                     labelText: 'Nombre', hintText: 'Nombre del producto'),
-                style: const TextStyle(color: Colors.white),
               ),
               const SizedBox(height: 30),
               TextFormField(
+                initialValue: product.price.toString(),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'^(\d+)?\.?\d{0,2}'))
+                ],
+                onChanged: (value) => double.tryParse(value) == null
+                    ? product.price = 0
+                    : product.price = double.parse(value),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Este campo es requerido';
+                  }
+                  return null;
+                },
                 keyboardType: TextInputType.number,
                 decoration:
                     InputDecorations.authInputDecoration(labelText: 'Precio'),
-                style: const TextStyle(color: Colors.white),
               ),
               const SizedBox(height: 30),
               SwitchListTile.adaptive(
                   title: const Text('Disponible'),
                   activeColor: Colors.indigo,
-                  value: true,
-                  onChanged: (value) {}),
+                  value: product.available,
+                  onChanged: productFormProvider.updateAvailability),
               const SizedBox(height: 30),
             ],
           ),

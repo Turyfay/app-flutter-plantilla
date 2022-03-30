@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ProductoImage extends StatelessWidget {
-  const ProductoImage({Key? key}) : super(key: key);
+  final String? url;
+  const ProductoImage({Key? key, this.url}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,15 +14,14 @@ class ProductoImage extends StatelessWidget {
         decoration: _buildBoxDecoration(),
         width: double.infinity,
         height: 450,
-        child: ClipRRect(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(40),
-            topRight: Radius.circular(40),
-          ),
-          child: const FadeInImage(
-            image: NetworkImage('https://via.placeholder.com/400x300'),
-            placeholder: AssetImage('assets/jar-loading.gif'),
-            fit: BoxFit.cover,
+        child: Opacity(
+          opacity: 0.8,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(40),
+              topRight: Radius.circular(40),
+            ),
+            child: getImage(url),
           ),
         ),
       ),
@@ -31,7 +33,7 @@ class ProductoImage extends StatelessWidget {
             topLeft: Radius.circular(40),
             topRight: Radius.circular(40),
           ),
-          color: Colors.red,
+          color: Colors.black,
           boxShadow: [
             BoxShadow(
               color: Colors.black12,
@@ -40,4 +42,22 @@ class ProductoImage extends StatelessWidget {
               offset: Offset(0, 5),
             )
           ]);
+}
+
+Widget getImage(String? url) {
+  if (url == null) {
+    return const Image(
+      image: AssetImage('assets/no-image.png'),
+      fit: BoxFit.cover,
+    );
+  }
+  if (url.startsWith('http')) {
+    return FadeInImage(
+      image: NetworkImage(url),
+      placeholder: const AssetImage('assets/jar-loading.gif'),
+      fit: BoxFit.cover,
+    );
+  }
+
+  return Image.file(File(url), fit: BoxFit.cover);
 }
