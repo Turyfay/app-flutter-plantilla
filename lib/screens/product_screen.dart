@@ -38,12 +38,23 @@ class _ProductsScreenBody extends StatelessWidget {
 
     return Scaffold(
         floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.save_outlined),
-          onPressed: () async {
-            if (!productFormProvider.isValid()) return;
-            await productService
-                .saveOrCreateProduct(productFormProvider.product);
-          },
+          child: productService.isSaving
+              ? const CircularProgressIndicator(
+                  color: Colors.white,
+                )
+              : const Icon(Icons.save_outlined),
+          onPressed: productService.isSaving
+              ? null
+              : () async {
+                  if (!productFormProvider.isValid()) return;
+                  final String? imageUrl = await productService.uploadImage();
+                  if (imageUrl != null) {
+                    productFormProvider.product.picture = imageUrl;
+
+                    await productService
+                        .saveOrCreateProduct(productFormProvider.product);
+                  }
+                },
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -67,17 +78,15 @@ class _ProductsScreenBody extends StatelessWidget {
                       right: 30,
                       child: IconButton(
                         onPressed: () async {
-                          final picker = new ImagePicker();
+                          final picker = ImagePicker();
                           final XFile? pickedFile = await picker.pickImage(
                               source: ImageSource.gallery, imageQuality: 100);
                           if (pickedFile == null) {
-                            print('No se pudo cargar la imagen');
                             return;
                           }
 
-                          print('Se cargo la imagen');
                           productService
-                              .updateSelectProductImage(pickedFile?.path);
+                              .updateSelectProductImage(pickedFile.path);
                         },
                         icon: const Icon(Icons.camera_alt_outlined,
                             color: Colors.white, size: 40),

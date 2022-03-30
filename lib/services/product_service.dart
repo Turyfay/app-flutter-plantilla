@@ -71,4 +71,31 @@ class ProductService extends ChangeNotifier {
     newPictureFile = File.fromUri(Uri.parse(imageUrl!));
     notifyListeners();
   }
+
+  Future<String?> uploadImage() async {
+    if (newPictureFile == null) return null;
+    isSaving = true;
+    notifyListeners();
+
+    final url = Uri.parse(
+        'https://api.cloudinary.com/v1_1/go504/image/upload?upload_preset=ml_default');
+    final response = await http.MultipartRequest(
+      'POST',
+      url,
+    );
+    final file = await http.MultipartFile.fromPath(
+      'file',
+      newPictureFile!.path,
+    );
+    response.files.add(file);
+    final streamResponse = await response.send();
+    final responseData = await http.Response.fromStream(streamResponse);
+
+    if (responseData.statusCode != 200 && responseData.statusCode != 201) {
+      return null;
+    }
+    newPictureFile = null;
+    final decodeData = json.decode(responseData.body);
+    return decodeData['secure_url'];
+  }
 }
