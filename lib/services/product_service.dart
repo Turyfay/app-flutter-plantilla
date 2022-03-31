@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:app_plantilla/models/models.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class ProductService extends ChangeNotifier {
   final String _baseUrl = 'flutter-va-b109c-default-rtdb.firebaseio.com';
+  final storage = const FlutterSecureStorage();
   late final List<Product> products = [];
   File? newPictureFile;
   Product? selectedProduct;
@@ -18,7 +20,9 @@ class ProductService extends ChangeNotifier {
   Future<List<Product>> loadProducts() async {
     isLoading = true;
     notifyListeners();
-    final url = Uri.https(_baseUrl, 'products.json');
+    final url = Uri.https(_baseUrl, 'products.json', {
+      'auth': await storage.read(key: 'token') ?? '',
+    });
     final response = await http.get(url);
     final Map<String, dynamic> productsMap = json.decode(response.body);
     productsMap.forEach((key, value) {
@@ -47,8 +51,13 @@ class ProductService extends ChangeNotifier {
   }
 
   Future<String> updateProduct(Product product) async {
-    final url = Uri.https(_baseUrl, 'products/${product.id}.json');
-    final response = await http.put(url, body: product.toJson());
+    final url = Uri.https(_baseUrl, 'products/${product.id}.json', {
+      'auth': await storage.read(key: 'token') ?? '',
+    });
+    final response = await http.put(
+      url,
+      body: product.toJson(),
+    );
     final decodeData = response.body;
 
     final index = products.indexWhere((p) => p.id == product.id);
@@ -58,7 +67,9 @@ class ProductService extends ChangeNotifier {
   }
 
   Future<String> createProduct(Product product) async {
-    final url = Uri.https(_baseUrl, 'products.json');
+    final url = Uri.https(_baseUrl, 'products.json', {
+      'auth': await storage.read(key: 'token') ?? '',
+    });
     final response = await http.post(url, body: product.toJson());
     final decodeData = json.decode(response.body);
     product.id = decodeData['name'];

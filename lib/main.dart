@@ -32,11 +32,13 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/login',
       routes: {
-        '/login': (context) => const LoginScreen(),
+        '/check-auth': (context) => const CheckAuthScreen(),
         '/home': (context) => const HomeScreen(),
+        '/login': (context) => const LoginScreen(),
         '/product': (context) => const ProductScreen(),
         '/register': (context) => const RegisterScreen(),
       },
+      scaffoldMessengerKey: NotificationService.meesageKey,
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.grey[300],
       ),

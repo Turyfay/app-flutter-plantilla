@@ -10,9 +10,19 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productService = Provider.of<ProductService>(context);
+    final authService = Provider.of<AuthService>(context, listen: false);
     if (productService.isLoading) return const LoadingScreen();
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_outlined),
+            onPressed: () {
+              authService.logout();
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+          ),
+        ],
         automaticallyImplyLeading: false, //Elimina el boton de volver
         centerTitle: true,
         title: const Text('Productos'),
