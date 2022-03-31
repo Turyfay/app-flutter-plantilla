@@ -5,8 +5,8 @@ import 'package:app_plantilla/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class RegisterScreen extends StatelessWidget {
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class LoginScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 10),
               const Text(
-                'Bienvenido',
+                'Crear cuenta',
                 style: TextStyle(fontSize: 30),
               ),
               const SizedBox(height: 10),
@@ -37,9 +37,9 @@ class LoginScreen extends StatelessWidget {
           style: ButtonStyle(
               overlayColor: MaterialStateProperty.all(Colors.indigo),
               shape: MaterialStateProperty.all(const StadiumBorder())),
-          onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
           child: const Text(
-            'Crea nueva cuenta',
+            'Ya tienes cuenta?',
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -119,8 +119,8 @@ class _LoginForm extends StatelessWidget {
                 Navigator.pushReplacementNamed(context, '/home');
               } else {
                 print(errorMessage);
+                loginProvider.isLoading = false;
               }
-              loginProvider.isLoading = false;
             },
             disabledColor: Colors.grey,
             color: Colors.purple,
